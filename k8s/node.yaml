@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cardano-testnet-producer-deployment
+  labels:
+    app: sp-node
+spec:
+  selector:
+    matchLabels:
+      app: sp-node
+  template:
+    metadata:
+      labels:
+        app: sp-node
+    spec:
+      containers:
+        - image: inputoutput/cardano-node:latest
+          name: sp-node
+          ports:
+            - containerPort: 4000
+          args: ["run", "--port", "4000"]
+          
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: cardano-testnet-producer-svc
+  labels:
+    app: sp-node
+spec:
+  ports:
+  - port: 4000
+    targetPort: 4000
+  selector:
+    app: sp-node
