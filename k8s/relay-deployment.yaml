@@ -1,11 +1,11 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: cardano-testnet-relay-deployment
+  name: cardano-mainnet-relay-deployment
   labels:
     app: relay-node
 spec:
-  serviceName: cardano-testnet-relay
+  serviceName: cardano-mainnet-relay
   selector:
     matchLabels:
       app: relay-node
@@ -21,17 +21,22 @@ spec:
             - containerPort: 3001
           volumeMounts:
             - name: data
-              # The cardano image doesn't use the /data path so you can put whatever you want in there
+              # The cardano image doesn't use the /data or /topology path so you can put whatever you want in there
               mountPath: /data
-          args: ["run", "--database-path", "/data", "--port", "3001"]
-          # args: ["run", "--config", "data/config/testnet-config.json", "--topology", "/data/config/testnet-toplogy.json", "--database-path", "/data/db", "--port", "3001"]
+            - name: topology
+              mountPath: /topology
+          args: ["run", "--topology", "/topology/topology.json", "--database-path", "/data", "--port", "3001"]
+      volumes:
+        - name: topology
+          configMap:
+            name: mainnet-relay-topology
   volumeClaimTemplates:
     - metadata:
         name: data
       spec:
         accessModes:
           - ReadWriteOnce
-        storageClassName: local-storage-testnet-relay
+        storageClassName: local-storage-mainnet-relay
         resources:
           requests:
             storage: 25Gi
@@ -41,7 +46,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: cardano-testnet-relay-svc
+  name: cardano-mainnet-relay-svc
   labels:
     app: relay-node
 spec:
