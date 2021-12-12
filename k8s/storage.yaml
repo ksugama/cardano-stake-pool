@@ -9,9 +9,9 @@ spec:
     - ReadWriteOnce # Only allow one container to use this volume
   persistentVolumeReclaimPolicy: Retain
   storageClassName: local-storage-testnet-relay
-  # # Set the path to the folder on the node that will be mounted for this volume
   local:
-    path: /
+    # Point this path to some empty directory on the NODE
+    path: /home
 
   nodeAffinity:
     required:

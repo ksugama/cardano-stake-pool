@@ -15,22 +15,22 @@ spec:
         app: relay-node
     spec:
       containers:
-        - image: inputoutput/cardano-node:latest
+        - image: inputoutput/cardano-node
           name: relay-node
           ports:
             - containerPort: 3001
           volumeMounts:
             - name: data
+              # The cardano image doesn't use the /data path so you can put whatever you want in there
               mountPath: /data
           args: ["run", "--database-path", "/data", "--port", "3001"]
+          # args: ["run", "--config", "data/config/testnet-config.json", "--topology", "/data/config/testnet-toplogy.json", "--database-path", "/data/db", "--port", "3001"]
   volumeClaimTemplates:
     - metadata:
         name: data
       spec:
         accessModes:
           - ReadWriteOnce
-        # This storageClassName is used on the previously defined volume that
-        # provides storage on the host machine
         storageClassName: local-storage-testnet-relay
         resources:
           requests:
