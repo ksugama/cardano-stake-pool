@@ -21,11 +21,14 @@ spec:
             - containerPort: 3001
           volumeMounts:
             - name: data
-              # The cardano image doesn't use the /data or /topology path so you can put whatever you want in there
+              # The cardano image doesn't use the /data, /topology, or /config path
               mountPath: /data
             - name: topology
               mountPath: /topology
-          args: ["run", "--topology", "/topology/topology.json", "--database-path", "/data", "--port", "3001"]
+          args: ["run", 
+                 "--topology", "/topology/relay_topology.json", 
+                 "--database-path", "/data", 
+                 "--port", "3001"]
       volumes:
         - name: topology
           configMap:
@@ -51,7 +54,30 @@ metadata:
     app: relay-node
 spec:
   ports:
+  - port: 3002
+    targetPort: 3001
+  selector:
+    app: relay-node
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: cardano-mainnet-relay-svc-lb
+  annotations:
+    # only network load balancer supports static IP
+    service.beta.kubernetes.io/aws-load-balancer-type: nlb
+    # comma-separated list of Elastic IP ids
+    # the length of the list must be equal to the number of subnets
+    service.beta.kubernetes.io/aws-load-balancer-eip-allocations: eipalloc-0f1fa0538892d320c
+  labels:
+    app: relay-node
+spec:
+  ports:
   - port: 3001
     targetPort: 3001
   selector:
     app: relay-node
+  externalTrafficPolicy: Local
+  type: LoadBalancer

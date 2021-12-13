@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: cardano-mainnet-producer-deployment
+  labels:
+    app: producer-node
+spec:
+  serviceName: cardano-mainnet-producer
+  selector:
+    matchLabels:
+      app: producer-node
+  template:
+    metadata:
+      labels:
+        app: producer-node
+    spec:
+      containers:
+        - image: inputoutput/cardano-node
+          name: producer-node
+          ports:
+            - containerPort: 4000
+          volumeMounts:
+            - name: data
+              # The cardano image doesn't use the /data, /topology, or /config path
+              mountPath: /data
+            - name: topology
+              mountPath: /topology
+            - name: keys
+              mountPath: /keys
+              readOnly: true
+          args: ["run", 
+                 "--topology", "/topology/producer_topology.json", 
+                 "--database-path", "/data", 
+                 "--port", "4000",
+                 "--shelley-kes-key", "/keys/kes.skey",
+                 "--shelley-vrf-key", "/keys/vrf.skey",
+                 "--shelley-operational-certificate", "/keys/node.cert"]
+      volumes:
+        - name: topology
+          configMap:
+            name: mainnet-producer-topology
+        - name: keys
+          secret:
+            secretName: mainnet-producer-keys
+            defaultMode: 0400
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        storageClassName: local-storage-mainnet-producer
+        resources:
+          requests:
+            storage: 25Gi
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: cardano-mainnet-producer-svc
+  labels:
+    app: producer-node
+spec:
+  ports:
+  - port: 4000
+    targetPort: 4000
+  selector:
+    app: producer-node

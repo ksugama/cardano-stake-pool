@@ -1,11 +1,34 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: mainnet-relay-topology
+  name: mainnet-producer-topology
 data:
-  topology.json: |
+  producer_topology.json: |
     {
       "Producers": [
+        {
+          "addr": "cardano-mainnet-relay-svc.default.svc.cluster.local",
+          "port": 3002,
+          "valency": 1
+        }
+      ]
+    }
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mainnet-relay-topology
+data:
+  relay_topology.json: |
+    {
+      "Producers": [
+        {
+          "addr": "cardano-mainnet-producer-svc.default.svc.cluster.local",
+          "port": 4000,
+          "valency": 1
+        },
         {
           "addr": "relays-new.cardano-mainnet.iohk.io",
           "port": 3001,
