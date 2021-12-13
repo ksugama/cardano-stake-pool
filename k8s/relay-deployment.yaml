@@ -20,15 +20,30 @@ spec:
           ports:
             - containerPort: 3001
           volumeMounts:
+            - name: data
+              # The cardano image doesn't use the /data, /topology, or /config path
+              mountPath: /data
             - name: topology
               mountPath: /topology
           args: ["run", 
                  "--topology", "/topology/relay_topology.json", 
+                 "--database-path", "/data", 
                  "--port", "3001"]
       volumes:
         - name: topology
           configMap:
             name: mainnet-relay-topology
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        storageClassName: local-storage-mainnet-relay
+        resources:
+          requests:
+            storage: 25Gi
+
 ---
 
 apiVersion: v1
