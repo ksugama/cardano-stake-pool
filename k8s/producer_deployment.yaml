@@ -20,9 +20,6 @@ spec:
           ports:
             - containerPort: 4000
           volumeMounts:
-            - name: data
-              # The cardano image doesn't use the /data, /topology, or /config path
-              mountPath: /data
             - name: topology
               mountPath: /topology
             - name: keys
@@ -30,7 +27,6 @@ spec:
               readOnly: true
           args: ["run", 
                  "--topology", "/topology/producer_topology.json", 
-                 "--database-path", "/data", 
                  "--port", "4000",
                  "--shelley-kes-key", "/keys/kes.skey",
                  "--shelley-vrf-key", "/keys/vrf.skey",
@@ -43,16 +39,6 @@ spec:
           secret:
             secretName: mainnet-producer-keys
             defaultMode: 0400
-  volumeClaimTemplates:
-    - metadata:
-        name: data
-      spec:
-        accessModes:
-          - ReadWriteOnce
-        storageClassName: local-storage-mainnet-producer
-        resources:
-          requests:
-            storage: 25Gi
 
 ---
 
